@@ -52,6 +52,8 @@ rigorous evaluation harness.
 
 ## Architecture
 
+![FinRAG architecture](assets/architecture.png)
+
 ```
 INGEST (once):  10-K HTML ─▶ parse (tables → atomic Markdown) ─▶ chunk (fixed AND semantic)
                           ─▶ embed (cached) ─▶ Pinecone (namespace per strategy) + BM25 corpus
