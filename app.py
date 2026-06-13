@@ -60,6 +60,18 @@ try:
 except Exception:
     pass  # no secrets.toml locally — .env handles it
 
+# Fail with a clear setup message (not a redacted crash) if required keys are missing.
+_missing = [k for k in ("NEBIUS_API_KEY", "PINECONE_API_KEY")
+            if not (os.getenv(k) or "").strip()]
+if _missing:
+    st.title("🦉 FinRAG — setup needed")
+    st.error("Missing required secret(s): **" + ", ".join(_missing) + "**")
+    st.markdown("On Streamlit Cloud, add them in **Manage app → Settings → Secrets** "
+                "(TOML), then the app reruns automatically:")
+    st.code('NEBIUS_API_KEY   = "..."\nPINECONE_API_KEY = "..."\n'
+            'OPENAI_API_KEY   = "..."\nAPP_PASSWORD     = "..."', language="toml")
+    st.stop()
+
 
 # Optional password gate — protects your API keys on a public deploy. Active only when
 # APP_PASSWORD is set (so local dev stays open). Set it in Streamlit Cloud → Secrets.
