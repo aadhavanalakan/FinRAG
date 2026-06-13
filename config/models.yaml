@@ -1,0 +1,72 @@
+# =============================================================================
+# models.yaml  —  Model registry for the Financial Document Intelligence pipeline
+# -----------------------------------------------------------------------------
+# Single source of truth for WHICH models the pipeline uses and HOW to reach
+# them. Code reads this file; nothing about models is hardcoded in Python.
+#
+# Versioning: bump `version` whenever a model choice changes. The run manifest
+# records this number so any metric shift is traceable to a config change.
+#
+# Secrets: API keys are NEVER stored here. We store the NAME of the environment
+# variable to read the key from (`api_key_env`). Set it in your shell, e.g.
+#   export NEBIUS_API_KEY=...
+# =============================================================================
+
+version: 1
+
+# -----------------------------------------------------------------------------
+# generation  —  the LLM that writes the final, cited answer from retrieved context
+# -----------------------------------------------------------------------------
+# Hosted on Nebius Token Factory (OpenAI-compatible API). We talk to it with the
+# standard `openai` client but point `base_url` at Nebius. No local install.
+generation:
+  provider: nebius
+  # NOTE: confirm the exact model id against the Nebius catalog before first call.
+  model: "Qwen/Qwen3-30B-A3B-Instruct-2507"   # confirmed available on this account (probe)
+  base_url: "https://api.tokenfactory.nebius.com/v1/"
+  api_key_env: NEBIUS_API_KEY
+  temperature: 0          # deterministic — we want grounded, repeatable answers
+  max_tokens: 1024
+  timeout_s: 60
+
+# -----------------------------------------------------------------------------
+# embedding  —  turns text (chunks + queries) into vectors for retrieval
+# -----------------------------------------------------------------------------
+# Hosted on Nebius Token Factory (OpenAI-compatible /embeddings endpoint). The
+# `dimension` MUST match the Pinecone index — vectorstore.py creates the index
+# from this value and asserts the live model agrees at ingest time.
+embedding:
+  provider: nebius
+  model: "Qwen/Qwen3-Embedding-8B"      # confirmed available on this account (probe)
+  dimension: 4096                        # confirmed: Qwen3-Embedding-8B returns 4096-dim vectors
+  base_url: "https://api.tokenfactory.nebius.com/v1/"
+  api_key_env: NEBIUS_API_KEY
+  normalize_embeddings: true            # L2-normalize client-side for cosine
+  # Qwen3-Embedding supports an instruction prefix on QUERIES for a retrieval boost;
+  # left empty for now — can enable during retrieval tuning (P3).
+  query_prefix: ""
+  batch_size: 32
+
+# -----------------------------------------------------------------------------
+# reranker  —  cross-encoder that re-sorts retrieved candidates (top-50 -> top-5)
+# -----------------------------------------------------------------------------
+# Also LOCAL. Slower than embedding but only runs on the handful of candidates.
+reranker:
+  provider: local                       # sentence-transformers CrossEncoder
+  model: "cross-encoder/ms-marco-MiniLM-L-12-v2"
+
+# -----------------------------------------------------------------------------
+# hosted_ceiling  —  OPTIONAL premium models, used ONLY in the P5 benchmark as a
+# "best possible" reference line. Disabled by default; play no role in P1–P4.
+# -----------------------------------------------------------------------------
+hosted_ceiling:
+  openai:
+    enabled: false
+    provider: openai
+    model: "gpt-4o"
+    api_key_env: OPENAI_API_KEY
+  claude:
+    enabled: false
+    provider: anthropic
+    model: "claude-opus-4-8"
+    api_key_env: ANTHROPIC_API_KEY

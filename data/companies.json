@@ -1,0 +1,23 @@
+{
+  "verizon": {
+    "name": "Verizon Communications Inc.",
+    "ticker": "VZ",
+    "cik": "0000732712",
+    "file": "data/verizon_10k.html",
+    "eval": true
+  },
+  "att": {
+    "name": "AT&T Inc.",
+    "ticker": "T",
+    "cik": "0000732717",
+    "file": "data/att_10k.html",
+    "eval": true
+  },
+  "tmobile": {
+    "name": "T-Mobile US, Inc.",
+    "ticker": "TMUS",
+    "cik": "0001283699",
+    "file": "data/tmobile_10k.html",
+    "eval": true
+  }
+}

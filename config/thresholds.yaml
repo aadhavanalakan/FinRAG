@@ -1,0 +1,53 @@
+# =============================================================================
+# thresholds.yaml  —  CI gating cutoffs for the offline eval harness
+# -----------------------------------------------------------------------------
+# The eval harness (eval/run_eval.py) scores the pipeline against the golden set.
+# CI (.github/workflows/eval.yml) runs it on every PR and FAILS the build if any
+# gated metric falls below its floor here. This catches regressions from BOTH
+# code changes AND prompt/config changes — a versioned prompt edit that quietly
+# tanks faithfulness gets blocked before merge.
+#
+# Scope: gating is enforced against the PRIMARY production config — the winning
+# arm (semantic + hybrid + rerank). The losing arms (fixed-size, no-rerank) are
+# run for the COMPARISON report, not gated; fixed-size is *expected* to score
+# low and must not block merges.
+#
+# Calibration: these are STARTING floors. After the first real eval run we set
+# each floor a little below the observed score (a regression guardrail, not an
+# aspiration). Bump `version` whenever a floor changes.
+# =============================================================================
+
+version: 2   # v2: calibrated to the first real baseline (semantic_norerank)
+
+# Which experiment arm CI gates on — the production winner. The eval
+# (results/rerank_study.json) showed reranking HURTS on this table-heavy corpus,
+# so the gated config is semantic chunking WITHOUT the reranker.
+gated_config: "semantic_norerank"
+
+# -----------------------------------------------------------------------------
+# retrieval  —  did we fetch the right chunks? (computed without an LLM)
+# -----------------------------------------------------------------------------
+# k is the cutoff rank these metrics are measured at (top-5 = what the LLM sees).
+# Floors set JUST BELOW the observed semantic_norerank baseline (hit@5 0.688,
+# MRR 0.483, nDCG 0.523) — guardrails against regression, not aspirations.
+retrieval:
+  k: 5
+  min_recall_at_k: 0.65       # baseline hit@5 = 0.688
+  min_mrr: 0.45               # baseline MRR  = 0.483
+  min_ndcg_at_k: 0.48         # baseline nDCG = 0.523
+
+# -----------------------------------------------------------------------------
+# generation  —  is the ANSWER trustworthy? (LLM-as-judge, see faithfulness.yaml)
+# -----------------------------------------------------------------------------
+generation:
+  min_faithfulness: 0.85      # baseline faithfulness = 1.000
+  min_citation_coverage: 0.60 # baseline citation coverage = 0.688
+
+# -----------------------------------------------------------------------------
+# gating behavior  —  how CI reacts when a floor is missed
+# -----------------------------------------------------------------------------
+gating:
+  mode: hard                  # `hard` = fail the build; `warn` = log but pass
+  # Tolerance band: allow tiny noise-level dips below a floor without failing.
+  # A drop larger than this is treated as a real regression.
+  tolerance: 0.02

@@ -1,0 +1,31 @@
+# Financial Document Intelligence pipeline — dependencies
+# Python 3.14 venv.  Install:  python -m venv .venv && ./.venv/bin/pip install -r requirements.txt
+#
+# Versions reflect what's installed and verified so far. Later phases append here.
+
+# --- config + parser + chunkers + embedder (Phase 1) ---
+pydantic==2.13.4               # typed, validated config loader
+PyYAML==6.0.3                 # read the YAML config files
+python-dotenv==1.2.2          # load API keys from .env
+beautifulsoup4==4.15.0        # table-aware HTML parsing
+lxml==6.1.1                   # fast HTML/XML backend for bs4
+requests==2.34.2              # Nebius REST calls (probe, smoke tests)
+langchain-text-splitters==1.1.2  # fixed-size chunker
+numpy==2.4.6                  # vector math + embedding cache
+openai==2.41.1                # Nebius client (OpenAI-compatible) for embeddings + generation
+
+pinecone==9.1.0               # vector store
+
+# --- retrieval + rerank + generation (Phase 3) ---
+rank-bm25==0.2.2              # BM25 keyword retrieval
+sentence-transformers==5.5.1  # local cross-encoder reranker (pulls torch==2.12.0)
+
+# --- chatbot UI + orchestration ---
+streamlit==1.58.0             # chat interface + live latency/cost/TTFT metrics panel
+langgraph==1.2.4              # compiled StateGraph: guard -> retrieve -> generate -> audit
+
+# --- docs ---
+python-docx==1.2.0            # generate DOCUMENTATION.docx from results/ (scripts.generate_docs)
+
+# --- tests / CI ---
+pytest==9.0.3                 # unit tests + invariants (CI also uses eval/gate.py)

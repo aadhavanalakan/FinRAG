@@ -1,0 +1,53 @@
+# =============================================================================
+# answer_models.yaml — the selectable generation models for the chatbot.
+# -----------------------------------------------------------------------------
+# Read by finrag/chat.py (NOT by the strict AppConfig), so adding a model here
+# never touches the eval/manifest. Each entry is an OpenAI-compatible endpoint
+# (Nebius Token Factory and OpenAI both speak the OpenAI API), switchable per
+# query in the Streamlit sidebar. A model is shown only if its api_key_env is set.
+#
+# `default` must match one of the `model` ids below.
+# Pricing for the live cost meter lives in config/pricing.yaml, keyed by `model`.
+# =============================================================================
+
+version: 1
+default: "Qwen/Qwen3-30B-A3B-Instruct-2507"
+
+models:
+  # --- Nebius Token Factory (open-source, cheap) -----------------------------
+  - label: "Qwen3-30B-A3B  ·  Nebius"
+    provider: nebius
+    model: "Qwen/Qwen3-30B-A3B-Instruct-2507"
+    base_url: "https://api.tokenfactory.nebius.com/v1/"
+    api_key_env: NEBIUS_API_KEY
+
+  - label: "Llama-3.3-70B  ·  Nebius"
+    provider: nebius
+    model: "meta-llama/Llama-3.3-70B-Instruct"
+    base_url: "https://api.tokenfactory.nebius.com/v1/"
+    api_key_env: NEBIUS_API_KEY
+
+  - label: "gpt-oss-120b  ·  Nebius"
+    provider: nebius
+    model: "openai/gpt-oss-120b"
+    base_url: "https://api.tokenfactory.nebius.com/v1/"
+    api_key_env: NEBIUS_API_KEY
+
+  - label: "Gemma-3-27B  ·  Nebius"
+    provider: nebius
+    model: "google/gemma-3-27b-it"
+    base_url: "https://api.tokenfactory.nebius.com/v1/"
+    api_key_env: NEBIUS_API_KEY
+
+  # --- OpenAI (paid; shown only if OPENAI_API_KEY is set) --------------------
+  - label: "GPT-4o-mini  ·  OpenAI"
+    provider: openai
+    model: "gpt-4o-mini"
+    base_url: "https://api.openai.com/v1/"
+    api_key_env: OPENAI_API_KEY
+
+  - label: "GPT-4o  ·  OpenAI"
+    provider: openai
+    model: "gpt-4o"
+    base_url: "https://api.openai.com/v1/"
+    api_key_env: OPENAI_API_KEY

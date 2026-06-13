@@ -1,0 +1,73 @@
+# =============================================================================
+# chunking.yaml  —  Parameters for the TWO chunking strategies being compared
+# -----------------------------------------------------------------------------
+# This is the heart of the project. We split each 10-K two different ways and
+# measure which one answers financial questions better. The ONE invariant both
+# strategies must honor: a parsed table is an ATOMIC chunk — never split mid-row.
+#
+# Versioning: bump `version` on any parameter change so a metric shift is
+# attributable to exactly this file.
+# =============================================================================
+
+version: 1
+
+# -----------------------------------------------------------------------------
+# Shared rules — apply to BOTH strategies, so the comparison stays fair
+# -----------------------------------------------------------------------------
+shared:
+  # The parser wraps each Markdown table in these markers. `protect_tables` is set
+  # PER STRATEGY below (it's the core experimental variable), so it's not here.
+  table_open_marker: "<!--TABLE-->"
+  table_close_marker: "<!--/TABLE-->"
+
+  # Pinecone caps per-vector metadata at 40 KB. We store chunk text in metadata,
+  # so cap any chunk well under that. Oversized chunks (e.g. a huge table) get a
+  # secondary split as a last resort.
+  max_chunk_chars: 8000
+
+  # Post-filter: drop junk chunks that hurt retrieval (page numbers, stray
+  # fragments, whitespace). Tables are exempt — they're always kept.
+  min_chunk_chars: 100        # drop anything shorter
+  min_alpha_ratio: 0.40       # drop if <40% of chars are letters (mostly numbers/symbols)
+
+# -----------------------------------------------------------------------------
+# Strategy 1: FIXED-SIZE  (the baseline — expected to shred prose around tables)
+# -----------------------------------------------------------------------------
+# LangChain RecursiveCharacterTextSplitter: cut at the first separator that
+# keeps a piece under chunk_size, walking down the ladder from paragraph -> char.
+fixed:
+  protect_tables: false       # THE BASELINE: split blindly, shredding tables mid-row
+  splitter: RecursiveCharacterTextSplitter
+  chunk_size: 512             # characters
+  chunk_overlap: 64           # carry 64 chars into the next chunk for continuity
+  separators:                 # ladder: try to break on the cleanest boundary first
+    - "\n\n"                  # paragraph
+    - "\n"                    # line
+    - ". "                    # sentence
+    - " "                     # word
+    - ""                      # hard character cut (last resort)
+
+# -----------------------------------------------------------------------------
+# Strategy 2: SEMANTIC  (expected winner — cuts at topic shifts, keeps ideas whole)
+# -----------------------------------------------------------------------------
+# Embed each sentence, walk neighbors, and start a new chunk where the cosine
+# DISTANCE between adjacent sentences spikes above a percentile threshold (a
+# topic boundary). Uses the SAME embedding model as retrieval (see models.yaml).
+semantic:
+  protect_tables: true        # keep each table whole as one atomic chunk
+  # Percentile of adjacent-sentence distances used as the cut threshold.
+  # Higher = fewer, larger chunks; lower = more, smaller chunks.
+  breakpoint_percentile: 95
+
+  # We don't trust a single threshold — we SWEEP these and record chunk count +
+  # avg length at each, then pick the winner on THIS corpus (telecom 10-Ks).
+  # 95 is a valid data point, not a default to settle on.
+  breakpoint_sweep: [95, 90, 80, 70, 65]
+
+  # Sentences-per-window when computing adjacent distance (1 = pure sentence-to-
+  # sentence; >1 smooths noisy single-sentence boundaries).
+  buffer_size: 1
+
+  # Safety floor/ceiling so semantic chunks don't collapse to one sentence or
+  # balloon past the metadata cap (handled by shared.max_chunk_chars too).
+  min_chunk_chars: 200

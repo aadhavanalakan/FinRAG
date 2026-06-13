@@ -1,0 +1,48 @@
+{
+  "stage": "benchmark",
+  "n_prompts": 10,
+  "max_tokens": 200,
+  "base_url": "https://api.tokenfactory.nebius.com/v1/",
+  "models": {
+    "Qwen/Qwen3-30B-A3B-Instruct-2507": {
+      "ttft_p50": 0.5924698749950039,
+      "ttft_p95": 1.014468087815476,
+      "tok_s": 95.03412501839695,
+      "lat_p50": 2.546449458001007,
+      "lat_p95": 3.1711210777502856,
+      "out_toks": 171.7,
+      "total_out_toks": 1717,
+      "cost_usd": null
+    },
+    "google/gemma-3-27b-it": {
+      "ttft_p50": 0.6619134584980202,
+      "ttft_p95": 1.1122683671499545,
+      "tok_s": 66.39853838427459,
+      "lat_p50": 3.64517922950472,
+      "lat_p95": 14.954745514086971,
+      "out_toks": 181.5,
+      "total_out_toks": 1815,
+      "cost_usd": null
+    },
+    "meta-llama/Llama-3.3-70B-Instruct": {
+      "ttft_p50": 0.7421192289984901,
+      "ttft_p95": 12.859665493899229,
+      "tok_s": 19.74184963324643,
+      "lat_p50": 11.145427333503903,
+      "lat_p95": 22.97013350769921,
+      "out_toks": 185.3,
+      "total_out_toks": 1853,
+      "cost_usd": null
+    },
+    "openai/gpt-oss-120b": {
+      "ttft_p50": 0.8168963130010525,
+      "ttft_p95": 1.3563460564153502,
+      "tok_s": 690.7226070367265,
+      "lat_p50": 1.0616549375044997,
+      "lat_p95": 1.323860875016544,
+      "out_toks": 186.7,
+      "total_out_toks": 1867,
+      "cost_usd": null
+    }
+  }
+}

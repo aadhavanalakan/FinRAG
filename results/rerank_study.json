@@ -1,0 +1,15 @@
+{
+  "stage": "rerank_study",
+  "arm": "semantic",
+  "n_answerable": 16,
+  "metric_note": "retrieval metrics over final top-5; content-based relevance (chunk contains answer key)",
+  "conclusion": "No reranker variant beats no-reranking on this table-heavy corpus. Caption + bge recover most of the loss but hybrid retrieval already ranks tables well. Production default: reranking OFF.",
+  "variants": {
+    "norerank":        {"hit@1": 0.375, "hit@3": 0.562, "hit@5": 0.688, "mrr": 0.483, "ndcg@5": 0.523},
+    "msmarco":         {"hit@1": 0.062, "hit@3": 0.188, "hit@5": 0.375, "mrr": 0.158, "ndcg@5": 0.211},
+    "msmarco+caption": {"hit@1": 0.188, "hit@3": 0.562, "hit@5": 0.625, "mrr": 0.359, "ndcg@5": 0.429},
+    "msmarco+blend":   {"hit@1": 0.000, "hit@3": 0.562, "hit@5": 0.625, "mrr": 0.276, "ndcg@5": 0.372},
+    "bge":             {"hit@1": 0.250, "hit@3": 0.438, "hit@5": 0.625, "mrr": 0.391, "ndcg@5": 0.435},
+    "bge+caption":     {"hit@1": 0.250, "hit@3": 0.500, "hit@5": 0.625, "mrr": 0.406, "ndcg@5": 0.454}
+  }
+}

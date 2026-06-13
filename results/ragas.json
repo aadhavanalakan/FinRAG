@@ -1,0 +1,29 @@
+{
+  "stage": "ragas",
+  "note": "RAGAS-style metrics computed in-house (gpt-4o-mini judge)",
+  "answer_model": "gpt-4o-mini",
+  "judge_model": "gpt-4o-mini",
+  "n_questions": 16,
+  "metrics": [
+    "faithfulness",
+    "context_precision",
+    "context_recall"
+  ],
+  "arms": {
+    "fixed_norerank": {
+      "faithfulness": 0.439,
+      "context_precision": 0.382,
+      "context_recall": 0.521
+    },
+    "semantic_norerank": {
+      "faithfulness": 0.681,
+      "context_precision": 0.436,
+      "context_recall": 0.583
+    },
+    "semantic_rerank": {
+      "faithfulness": 0.573,
+      "context_precision": 0.218,
+      "context_recall": 0.375
+    }
+  }
+}

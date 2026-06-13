@@ -1,0 +1,20 @@
+# =============================================================================
+# pricing.yaml — USD per 1,000,000 tokens, per model, for the live cost meter.
+# -----------------------------------------------------------------------------
+# These are ESTIMATES — confirm against the provider's pricing page and edit:
+#   - Nebius Token Factory : https://nebius.com/prices  (Token Factory section)
+#   - OpenAI               : https://openai.com/api/pricing
+# The chatbot computes cost = (prompt_tokens/1e6)*input + (completion_tokens/1e6)*output
+# from the exact token counts the API returns. A model missing here shows cost "n/a".
+# =============================================================================
+
+version: 1
+
+prices:
+  # model id : {input: USD/1M prompt tokens, output: USD/1M completion tokens}
+  "Qwen/Qwen3-30B-A3B-Instruct-2507":   {input: 0.10, output: 0.30}
+  "meta-llama/Llama-3.3-70B-Instruct":  {input: 0.13, output: 0.40}
+  "openai/gpt-oss-120b":                {input: 0.15, output: 0.45}
+  "google/gemma-3-27b-it":              {input: 0.10, output: 0.30}
+  "gpt-4o-mini":                        {input: 0.15, output: 0.60}
+  "gpt-4o":                             {input: 2.50, output: 10.00}

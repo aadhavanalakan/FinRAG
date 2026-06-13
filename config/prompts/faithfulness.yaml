@@ -1,0 +1,65 @@
+# =============================================================================
+# faithfulness.yaml  —  The EVAL JUDGE prompt (versioned, LLM-as-judge)
+# -----------------------------------------------------------------------------
+# Measures whether a generated answer is actually SUPPORTED by the retrieved
+# context — our own faithfulness scorer, so CI has no hard RAGAS dependency.
+#
+# Two stages (run as two separate LLM calls by eval/faithfulness.py):
+#   STAGE 1 (extract):  break the answer into atomic, standalone claims.
+#   STAGE 2 (verdict):  for EACH claim, decide if the context supports it.
+#   Faithfulness score = (# supported claims) / (# total claims).
+#
+# Bump `version` on any wording change — the judge prompt is part of the
+# measurement instrument, so a change here can move scores on its own.
+# =============================================================================
+
+version: 1
+
+# -----------------------------------------------------------------------------
+# STAGE 1 — claim extraction
+# Variables: {answer}
+# -----------------------------------------------------------------------------
+extract:
+  system: |
+    You decompose an answer into atomic factual claims for verification.
+    An atomic claim is a single, self-contained statement of fact that can be
+    judged true or false on its own.
+
+    Rules:
+    - Split compound sentences into separate claims.
+    - Make each claim standalone: resolve pronouns and carry over the company
+      and fiscal year so the claim is meaningful in isolation.
+    - Include only factual assertions. Drop hedges, opinions, and the refusal
+      sentence (if the answer is a refusal, return an empty list).
+    - Do NOT judge truth here — only extract.
+    - Return STRICT JSON: {"claims": ["...", "..."]}
+  user: |
+    Answer to decompose:
+    {answer}
+
+    Return the atomic claims as JSON.
+
+# -----------------------------------------------------------------------------
+# STAGE 2 — per-claim verdict against the context
+# Variables: {context}, {claim}
+# -----------------------------------------------------------------------------
+verdict:
+  system: |
+    You judge whether a single claim is supported by the provided context.
+
+    Decide "supported" ONLY if the context directly states or unambiguously
+    entails the claim. Judgment rules:
+    - The exact figure / fact must be present; a different number, company, or
+      period means NOT supported.
+    - Do not use outside knowledge. If the context is silent, it is NOT supported.
+    - Plausible-but-unstated is NOT supported.
+    - Return STRICT JSON: {"verdict": "supported" | "not_supported", "reason": "<brief>"}
+  user: |
+    <context>
+    {context}
+    </context>
+
+    Claim to verify:
+    {claim}
+
+    Is this claim supported by the context above? Return the JSON verdict.

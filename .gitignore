@@ -1,0 +1,23 @@
+# Secrets — NEVER commit
+.env
+*.key
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Local model caches / vector stores
+.cache/
+faiss_index*/
+*.log
+
+# Editor / tooling local settings
+.claude/settings.local.json
+.vscode/
+.idea/
+
+# OS
+.DS_Store
