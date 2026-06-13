@@ -53,11 +53,32 @@ st.markdown(
 # On Streamlit Cloud, API keys come from st.secrets — mirror them into env vars so the
 # existing os.getenv-based key resolution works (locally, .env handles this instead).
 try:
-    for _k in ("NEBIUS_API_KEY", "PINECONE_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
+    for _k in ("NEBIUS_API_KEY", "PINECONE_API_KEY", "OPENAI_API_KEY",
+               "ANTHROPIC_API_KEY", "APP_PASSWORD"):
         if _k in st.secrets and not os.getenv(_k):
             os.environ[_k] = str(st.secrets[_k])
 except Exception:
     pass  # no secrets.toml locally — .env handles it
+
+
+# Optional password gate — protects your API keys on a public deploy. Active only when
+# APP_PASSWORD is set (so local dev stays open). Set it in Streamlit Cloud → Secrets.
+def _require_password() -> None:
+    expected = (os.getenv("APP_PASSWORD") or "").strip()
+    if not expected or st.session_state.get("authed"):
+        return
+    st.title("🦉 FinRAG")
+    st.caption("This demo is password-protected to control API usage.")
+    pw = st.text_input("Access password", type="password")
+    if pw and pw == expected:
+        st.session_state["authed"] = True
+        st.rerun()
+    elif pw:
+        st.error("Incorrect password.")
+    st.stop()
+
+
+_require_password()
 
 # Curated demo prompts — every one is verified to answer (no awkward refusals on stage),
 # spanning lookups, a comparison, the auditor, narrative, capex, EPS, and year-over-year.

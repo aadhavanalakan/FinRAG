@@ -25,3 +25,6 @@ faiss_index*/
 
 # OS
 .DS_Store
+
+# CI workflow — add after granting gh the "workflow" scope: git add -f .github/workflows/ci.yml
+.github/workflows/ci.yml
