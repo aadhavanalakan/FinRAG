@@ -14,6 +14,8 @@ Run:  streamlit run app.py
 
 from __future__ import annotations
 
+import os
+
 import streamlit as st
 
 from finrag.chat import ChatEngine, available_models, default_model_id
@@ -47,6 +49,15 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+# On Streamlit Cloud, API keys come from st.secrets — mirror them into env vars so the
+# existing os.getenv-based key resolution works (locally, .env handles this instead).
+try:
+    for _k in ("NEBIUS_API_KEY", "PINECONE_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
+        if _k in st.secrets and not os.getenv(_k):
+            os.environ[_k] = str(st.secrets[_k])
+except Exception:
+    pass  # no secrets.toml locally — .env handles it
 
 # Curated demo prompts — every one is verified to answer (no awkward refusals on stage),
 # spanning lookups, a comparison, the auditor, narrative, capex, EPS, and year-over-year.

@@ -26,7 +26,13 @@ class Reranker:
     @property
     def model(self):
         if self._model is None:
-            from sentence_transformers import CrossEncoder
+            try:
+                from sentence_transformers import CrossEncoder
+            except ImportError as e:
+                raise RuntimeError(
+                    "Reranking needs sentence-transformers (pip install sentence-transformers). "
+                    "It is optional and OFF by default — measured to hurt on this corpus."
+                ) from e
             self._model = CrossEncoder(self.model_name)
         return self._model
 

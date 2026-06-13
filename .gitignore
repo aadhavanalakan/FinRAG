@@ -9,8 +9,12 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 
-# Local model caches / vector stores
-.cache/
+# Local model caches / vector stores — ignore everything in .cache EXCEPT the small
+# BM25 corpus JSONL, which retrieval needs at runtime (so the deployed app works).
+.cache/*
+!.cache/corpus/
+.cache/corpus/*
+!.cache/corpus/*.jsonl
 faiss_index*/
 *.log
 

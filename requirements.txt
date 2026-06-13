@@ -18,7 +18,10 @@ pinecone==9.1.0               # vector store
 
 # --- retrieval + rerank + generation (Phase 3) ---
 rank-bm25==0.2.2              # BM25 keyword retrieval
-sentence-transformers==5.5.1  # local cross-encoder reranker (pulls torch==2.12.0)
+# OPTIONAL — the cross-encoder reranker. It pulls torch (~1GB), is OFF by default, and
+# was measured to HURT on this corpus, so it is left OUT of the default install to keep
+# deploys (Streamlit Cloud) lean. To use the reranker / rerank study, install it:
+#   pip install sentence-transformers==5.5.1
 
 # --- chatbot UI + orchestration ---
 streamlit==1.58.0             # chat interface + live latency/cost/TTFT metrics panel
