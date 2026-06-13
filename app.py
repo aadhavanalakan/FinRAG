@@ -66,10 +66,15 @@ _missing = [k for k in ("NEBIUS_API_KEY", "PINECONE_API_KEY")
 if _missing:
     st.title("🦉 FinRAG — setup needed")
     st.error("Missing required secret(s): **" + ", ".join(_missing) + "**")
-    st.markdown("On Streamlit Cloud, add them in **Manage app → Settings → Secrets** "
-                "(TOML), then the app reruns automatically:")
-    st.code('NEBIUS_API_KEY   = "..."\nPINECONE_API_KEY = "..."\n'
-            'OPENAI_API_KEY   = "..."\nAPP_PASSWORD     = "..."', language="toml")
+    try:
+        _seen = list(st.secrets.keys())
+    except Exception:
+        _seen = []
+    st.caption(f"Secrets the app can currently see (names only): {_seen or '(none)'}")
+    st.markdown("On Streamlit Cloud, add them in **Manage app → ⋮ → Settings → Secrets** "
+                "(TOML, no `[section]` header), then **Save** — the app reruns automatically:")
+    st.code('NEBIUS_API_KEY   = "your-key"\nPINECONE_API_KEY = "your-key"\n'
+            'OPENAI_API_KEY   = "your-key"\nAPP_PASSWORD     = "anything"', language="toml")
     st.stop()
 
 
