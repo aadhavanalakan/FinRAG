@@ -55,8 +55,8 @@ st.markdown(
 try:
     for _k in ("NEBIUS_API_KEY", "PINECONE_API_KEY", "OPENAI_API_KEY",
                "ANTHROPIC_API_KEY", "APP_PASSWORD"):
-        if _k in st.secrets and not os.getenv(_k):
-            os.environ[_k] = str(st.secrets[_k])
+        if _k in st.secrets:
+            os.environ[_k] = str(st.secrets[_k]).strip()   # strip stray paste whitespace/newlines
 except Exception:
     pass  # no secrets.toml locally — .env handles it
 
@@ -174,7 +174,7 @@ def render_assistant(r) -> None:
         st.caption(r.audit.disclaimer)
 
 
-def friendly_error(e: Exception) -> None:
+def friendly_error(e: Exception, model=None) -> None:
     msg = str(e)
     name = type(e).__name__
     if "insufficient_quota" in msg or "RateLimit" in name or "429" in msg:
@@ -186,6 +186,12 @@ def friendly_error(e: Exception) -> None:
                  "incomplete. On Streamlit Cloud fix it in **Manage app → Settings → Secrets** "
                  "(paste the *full* key in straight quotes, one line), then **Reboot**. "
                  "Or pick a different model whose key is valid.")
+        if model is not None:
+            klen = len((os.getenv(model.api_key_env) or "").strip())
+            st.caption(f"🔎 Debug: the app loaded a **{klen}-character** value for "
+                       f"`{model.api_key_env}`. A valid Nebius key is **235 chars**, "
+                       "OpenAI **~164**. If yours is shorter, the secret was truncated — "
+                       "re-copy the *entire* key.")
     else:
         st.error(f"⚠️ Generation failed: {msg[:300]}")
 
@@ -314,7 +320,7 @@ if prompt:
                 result = executor.answer(prompt, model=model, strategy=strategy,
                                          use_reranker=use_reranker, company=company_arg)
         except Exception as e:  # noqa: BLE001 — surface any provider error cleanly
-            friendly_error(e)
+            friendly_error(e, model)
         if result is not None:
             render_assistant(result)
 
