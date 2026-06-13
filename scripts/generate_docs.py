@@ -104,6 +104,10 @@ def build() -> None:
     meta = doc.add_paragraph()
     meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
     meta.add_run(f"{AUTHOR}  ·  {EMAIL}  ·  Generated {datetime.now().strftime('%Y-%m-%d')}")
+    link = doc.add_paragraph()
+    link.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    link.add_run("Live demo: https://aadhavanalakan-finrag-app-eadpfy.streamlit.app   ·   "
+                 "Code: https://github.com/aadhavanalakan/FinRAG").bold = True
     doc.add_paragraph()
 
     # 1. Executive summary
@@ -263,9 +267,11 @@ def build() -> None:
         "Conclusion D: Refusal discipline and guardrails hold under adversarial probing. The one "
         "genuine miss (AT&T operating income) is a retrieval miss — the figure was not in the "
         "retrieved chunks, so the model correctly refused rather than fabricate. The structural "
-        "weakness is multi-document synthesis: cross-company comparisons and computed ratios need "
-        "per-company sub-queries the single-pass retriever does not issue, so they honestly refuse. "
-        "The full per-item breakdown is in eval/FAILURE_ANALYSIS.md.")
+        "weakness this surfaced was multi-document synthesis: cross-company comparisons needed "
+        "per-company sub-queries the single-pass retriever did not issue. That gap is now closed "
+        "in the chatbot answer path via query planning (see Section 10.1) — comparisons resolve "
+        "each company separately and synthesize. The full per-item breakdown is in "
+        "eval/FAILURE_ANALYSIS.md.")
 
     # 9.1 RAGAS cross-check
     doc.add_heading("9.1  RAGAS Cross-Check (industry-standard metrics)", level=2)
@@ -301,6 +307,45 @@ def build() -> None:
         "sidebar. The three seed telecoms are protected so the eval set can't be broken.",
     ]:
         doc.add_paragraph(b, style="List Bullet")
+
+    # 10.1 Reliability engineering (the chatbot answer path)
+    doc.add_heading("10.1  Reliability Engineering (chat answer path)", level=2)
+    doc.add_paragraph(
+        "The eval harness uses a strict top-k retrieval (for a clean chunking/reranking "
+        "comparison), but the CHATBOT answer path adds three reliability layers so real "
+        "questions don't miss retrievable facts — the difference between a research artifact "
+        "and a usable product:")
+    for b in [
+        "Coverage mode — single-company questions feed the model ~20 ranked chunks (not 5) "
+        "within a large context budget, so a fact that ranks 6th-20th (e.g. the auditor, "
+        "Deloitte) is still in context. This is the 'put more in context' fix; a stingy top-5 "
+        "was the root cause of spurious refusals.",
+        "Income-statement guarantee — any question about a financial line (revenue, operating "
+        "income, net income, EPS) injects that company's consolidated income-statement table, "
+        "pinned by a canonical query, so figure lookups never miss the statement line.",
+        "Query planning for comparisons — a cross-company question is decomposed into one "
+        "reliable single-company lookup per company, then the comparison is synthesized from "
+        "those clean, cited answers. This fixes the classic failure where the model picks the "
+        "wrong company's number or the wrong fiscal year out of a pile of similar tables.",
+    ]:
+        doc.add_paragraph(b, style="List Bullet")
+    doc.add_paragraph(
+        "Net effect: single lookups, the auditor question, narrative/MD&A questions, and "
+        "cross-company comparisons all answer correctly, while unanswerable and forward-guidance "
+        "questions still refuse and injection/advice are still blocked.")
+
+    # 10.2 Deployment
+    doc.add_heading("10.2  Deployment", level=2)
+    doc.add_paragraph(
+        "Deployed on Streamlit Community Cloud from the public GitHub repo. The BM25 corpus is "
+        "committed so retrieval works on a fresh clone; the cross-encoder reranker (torch) is "
+        "left out of the default install to keep the build lean; API keys are supplied via "
+        "Streamlit secrets (mirrored into environment variables at startup); an optional "
+        "password gate activates only when APP_PASSWORD is set.")
+    add_table(doc, ["Resource", "URL"], [
+        ["Live app", "https://aadhavanalakan-finrag-app-eadpfy.streamlit.app"],
+        ["Source", "https://github.com/aadhavanalakan/FinRAG"],
+    ])
 
     # 11. Engineering
     doc.add_heading("11. Engineering Practices", level=1)
