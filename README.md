@@ -1,5 +1,9 @@
 # FinRAG — Financial Document Intelligence (RAG)
 
+### 🚀 Live demo: **https://aadhavanalakan-finrag-app-eadpfy.streamlit.app**
+
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://aadhavanalakan-finrag-app-eadpfy.streamlit.app)
+
 A Retrieval-Augmented Generation system that answers natural-language questions about
 **SEC 10-K filings** with **grounded, cited** answers — and *measures* which design
 choices actually help. It ships as a **Streamlit chatbot** with live cost/latency
