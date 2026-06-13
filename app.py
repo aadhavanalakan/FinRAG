@@ -182,7 +182,10 @@ def friendly_error(e: Exception) -> None:
                  "reasons. Add billing/credits for that provider (e.g. OpenAI), or switch "
                  "to a **Nebius** model in the sidebar — those are working.")
     elif "AuthenticationError" in name or "401" in msg:
-        st.error("⚠️ Authentication failed for this provider — check the API key in `.env`.")
+        st.error("⚠️ Authentication failed for this provider — the API key is wrong or "
+                 "incomplete. On Streamlit Cloud fix it in **Manage app → Settings → Secrets** "
+                 "(paste the *full* key in straight quotes, one line), then **Reboot**. "
+                 "Or pick a different model whose key is valid.")
     else:
         st.error(f"⚠️ Generation failed: {msg[:300]}")
 
